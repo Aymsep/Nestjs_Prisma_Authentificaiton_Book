@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  email       String       @unique
+  name        String
+  hash        String
+  hashedRt    String?
+  books       Book[]       @relation("UserBooks")
+  sharedBooks BookShares[] @relation("SharedBooks")
+
+  @@map("users")
+}
+
+model Book {
+  id         Int          @id @default(autoincrement())
+  bookname   String
+  year       Int
+  authorId   Int
+  author     User         @relation("UserBooks", fields: [authorId], references: [id])
+  sharedWith BookShares[] @relation("SharedBooks")
+}
+
+model BookShares {
+  id          Int      @id @default(autoincrement())
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  bookId      Int
+  recipientId Int
+  book        Book     @relation("SharedBooks", fields: [bookId], references: [id])
+  recipient   User     @relation("SharedBooks", fields: [recipientId], references: [id])
+
+  @@map("book_shares")
+}
